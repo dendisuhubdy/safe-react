@@ -19,7 +19,7 @@ import { AddressBookEntry } from 'src/logic/addressBook/model/addressBook'
 import { addressBookSelector } from 'src/logic/addressBook/store/selectors'
 
 import { formatAddressListToAddressBookNames } from 'src/logic/addressBook/utils'
-import { getGnosisSafeInstanceAt } from 'src/logic/contracts/safeContracts'
+import { getSafeInfo } from 'src/logic/safe/utils/safeInformation'
 import { FIELD_LOAD_ADDRESS, THRESHOLD } from 'src/routes/load/components/fields'
 import { getOwnerAddressBy, getOwnerNameBy } from 'src/routes/open/components/fields'
 import { styles } from './styles'
@@ -28,9 +28,11 @@ import { ExplorerButton } from '@gnosis.pm/safe-react-components'
 
 const calculateSafeValues = (owners, threshold, values) => {
   const initialValues = { ...values }
+
   for (let i = 0; i < owners.length; i += 1) {
     initialValues[getOwnerAddressBy(i)] = owners[i]
   }
+
   initialValues[THRESHOLD] = threshold
   return initialValues
 }
@@ -55,13 +57,11 @@ const OwnerListComponent = (props) => {
 
     const fetchSafe = async () => {
       const safeAddress = values[FIELD_LOAD_ADDRESS]
-      const gnosisSafe = getGnosisSafeInstanceAt(safeAddress)
-      const safeOwners = await gnosisSafe.methods.getOwners().call()
-      const threshold = await gnosisSafe.methods.getThreshold().call()
+      const safeInfo = await getSafeInfo(safeAddress)
 
       if (isCurrent) {
-        const sortedOwners = safeOwners.slice().sort()
-        const initialValues = calculateSafeValues(sortedOwners, threshold, values)
+        const sortedOwners = safeInfo.owners.map(({ value }) => value).sort()
+        const initialValues = calculateSafeValues(sortedOwners, safeInfo.threshold, values)
         updateInitialProps(initialValues)
         setOwners(sortedOwners)
       }
