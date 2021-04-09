@@ -44,7 +44,6 @@ const Controls = ({
 
   let next
   if (!buttonLabels) {
-    // eslint-disable-next-line
     next = firstPage ? 'Start' : penultimate ? 'Review' : lastPage ? 'Submit' : 'Next'
   } else {
     next = buttonLabels[currentStep]
